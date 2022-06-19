@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>GDS TEC - {{{ PRODUCT_NAME }}}</title>
+  <link rel="shortcut icon" href="TemplateData/FAVICON.png">
+  <link rel="stylesheet" href="TemplateData/style.css">
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+</head>
+
+<body>
+  <div id="unity-container" class="unity-desktop">
+    <canvas id="unity-canvas"></canvas>
+    <div id="unity-loading-bar">
+      <div id="unity-logo"></div>
+      <div id="unity-progress-bar-empty">
+        <div id="unity-progress-bar-full"></div>
+      </div>
+    </div>
+    <div id="unity-mobile-warning">
+      WebGL builds are not supported on this mobile device.
+    </div>
+    <div id="unity-footer">
+      <div id="unity-fullscreen-button"></div>
+    </div>
+  </div>
+  
+  <div id="lock-message">
+    <h4 id="h4-message" lang="pt-br"></h4>
+  </div>
+  <script>
+
+      //Custom Variables
+      const orientationMessage = "{{{ ORIENTATION_MESSAGE }}}";
+
+      const maxPixelRatioMobile = 2.0;
+      const maxPixelRatioDesktop = 1.5;
+
+      var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      var maxDevicePixelRatio = isMobile? maxPixelRatioMobile: maxPixelRatioDesktop;
+      var pixelRatio = Math.min(window.devicePixelRatio, maxDevicePixelRatio);
+
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/{{{ LOADER_FILENAME }}}";
+      var config = {
+        dataUrl: buildUrl + "/{{{ DATA_FILENAME }}}",
+        frameworkUrl: buildUrl + "/{{{ FRAMEWORK_FILENAME }}}",
+        codeUrl: buildUrl + "/{{{ CODE_FILENAME }}}",
+#if MEMORY_FILENAME
+        memoryUrl: buildUrl + "/{{{ MEMORY_FILENAME }}}",
+#endif
+
+#if SYMBOLS_FILENAME
+        symbolsUrl: buildUrl + "/{{{ SYMBOLS_FILENAME }}}",
+#endif
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "{{{ COMPANY_NAME }}}",
+        productName: "{{{ PRODUCT_NAME }}}",
+        productVersion: "{{{ PRODUCT_VERSION }}}",
+        devicePixelRatio: pixelRatio
+      };
+
+    var container = document.querySelector("#unity-container");
+    var canvas = document.querySelector("#unity-canvas");
+    var loadingBar = document.querySelector("#unity-loading-bar");
+    var progressBarFull = document.querySelector("#unity-progress-bar-full");
+    var fullscreenButton = document.querySelector("#unity-fullscreen-button");
+    var mobileWarning = document.querySelector("#unity-mobile-warning");
+    var orientationElement = document.getElementById("h4-message")
+
+
+    if (isMobile) {
+      container.className = "unity-mobile";
+      mobileWarning.style.display = "block";
+      setTimeout(() => {
+        mobileWarning.style.display = "none";
+      }, 5000);
+    } else {
+      canvas.style.width = "100%";
+      canvas.style.minHeight = "100vh";
+    }
+    
+    loadingBar.style.display = "block";
+    orientationElement.innerText = orientationMessage
+
+    var unitygame;
+    var script = document.createElement("script");
+    script.src = loaderUrl;
+    script.onload = () => {
+      createUnityInstance(canvas, config, (progress) => {
+        progressBarFull.style.width = `${100 * progress}`+ "%";
+      }).then((unityInstance) => {
+        unitygame = unityInstance
+        loadingBar.style.display = "none";
+
+        fullscreenButton.onclick = () => {
+            unityInstance.SetFullscreen(1);
+          };
+      }).catch((message) => {
+        alert("Reload your Browser! some error in loading was indetified . . .");
+      });
+    };
+      
+    document.body.appendChild(script);
+  </script>
+</body>
+
+</html>
